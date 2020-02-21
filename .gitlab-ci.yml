@@ -29,14 +29,16 @@ upstream:armv7:build:
     - apt-get update
     - apt-get install -y -qq debootstrap
   script:
-    - make -C debian-armv7 rootfs.tar
+    - make -C debian9 rootfs.tar
   artifacts:
     paths:
-      - debian-armv7/rootfs.tar
+      - debian9/rootfs.tar
     expire_in: 1 day
 
 upstream:armv7:publish:
   stage: publish
+  variables:
+    - IMAGE_TAG_SUFFIX: "oneshot"
   tags:
     - arm
   only:
@@ -57,17 +59,17 @@ debian:armv7:build:
 
   #  image: arm32v7/debian
   #  image: registry.gitlab.com/modioab/base-image/bootstrap:debian-armv7
-  image: registry.gitlab.com/modioab/arm-image:oneshot
+  image: registry.gitlab.com/modioab/arm-image/debian9:oneshot
   before_script:
     - sed -i s:httpredir:ftp.nl:g /etc/apt/sources.list
     - apt-get clean
     - apt-get update
     - apt-get install -y -qq debootstrap
   script:
-    - make -C debian-armv7 rootfs.tar
+    - make -C debian9 rootfs.tar
   artifacts:
     paths:
-      - debian-armv7/rootfs.tar
+      - debian9/rootfs.tar
     expire_in: 1 day
 
 
@@ -81,4 +83,4 @@ debian:armv7:publish:
   dependencies:
     - debian:armv7:build
   script:
-    - make -C debian-armv7 build-publish
+    - make -C debian9 build-publish

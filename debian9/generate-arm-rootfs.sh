@@ -12,7 +12,7 @@ trap "chmod -R u+w $TMPDIR; rm -rf $TMPDIR" EXIT
 
 PACKAGES="multistrap,squashfs-tools,dracut,xdelta3,unzip,xz-utils,dbus,util-linux,e2fsprogs,dosfstools,tar,make,git,automake,libtool,ca-certificates"
 # Create basic root
-debootstrap --include=${PACKAGES} jessie $TMPDIR
+debootstrap --include=${PACKAGES} stretch $TMPDIR
 
 # create an archive
 pushd $TMPDIR
