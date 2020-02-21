@@ -1,17 +1,14 @@
+# vim: expandtab:ts=2:sw=2:fdm=marker
 ---
-image: registry.gitlab.com/modioab/base-image/fedora-31/container:master
 stages:
-  - first
-  - second
   - build
   - publish
-  - deploy
 
 variables:
-    # Podman defaults to OCI images, since 2019-02-15+ onwards, gitlab registry
-    # fails to work properly with the default `oci` images.
-    # TODO: Test & bug-report this
-    BUILDAH_FORMAT: docker
+  # Podman defaults to OCI images, since 2019-02-15+ onwards, gitlab registry
+  # fails to work properly with the default `oci` images.
+  # TODO: Test & bug-report this
+  BUILDAH_FORMAT: docker
 
 before_script:
   - make -f build.mk login
@@ -19,97 +16,54 @@ before_script:
   - 'podman info ||:'
 
 
-container:29:
-  stage: second
-  tags:
-    - x86_64
-  variables:
-    FEDORA_ROOT_RELEASE: '29'
-  script:
-    - make -C container build test publish
-
-
-container:f31:
-  stage: second
-  tags:
-    - x86_64
-  variables:
-    FEDORA_ROOT_RELEASE: '31'
-  script:
-    - make -C container build test publish
-
-
-build-image-29:
+upstream:armv7:build:
   stage: build
   tags:
-    - x86_64
-  script:
-    - make -C build-fedora-29 build-publish
-
-
-build-image:f31:
-  stage: build
-  tags:
-    - x86_64
-  script:
-    - make -C build-fedora-31 build-publish
-
-
-python3-image:29:
-  stage: second
-  tags:
-    - x86_64
-  variables:
-    FEDORA_ROOT_RELEASE: '29'
-  script:
-    - make -C python3-image build-publish
-
-
-python3:f31:
-  stage: second
-  tags:
-    - x86_64
-  variables:
-    FEDORA_ROOT_RELEASE: '31'
-  script:
-    - make -C python3-image build-publish
-
-jstest:f31:
-  stage: second
-  tags:
-    - x86_64
-  script:
-    - make -C jstest build-publish
-
-
-debian9-firmware:
-  stage: build
-  tags:
-    - x86_64
-  script:
-    - make -C debian9-firmware build-publish
-
-
-debian10-firmware:
-  stage: build
-  tags:
-    - x86_64
-  script:
-    - make -C debian10-firmware build-publish
-
-
-debian-armv7:build:
-  image: registry.gitlab.com/modioab/base-image:debian-armv7-master
-  #  image: arm32v7/debian
-  #  image: registry.gitlab.com/modioab/base-image/bootstrap:debian-armv7
+    - arm
+  only:
+    - web
+  image: arm32v7/debian
   before_script:
     - sed -i s:httpredir:ftp.nl:g /etc/apt/sources.list
     - apt-get clean
     - apt-get update
     - apt-get install -y -qq debootstrap
-  stage: second
+  script:
+    - make -C debian-armv7 rootfs.tar
+  artifacts:
+    paths:
+      - debian-armv7/rootfs.tar
+    expire_in: 1 day
+
+upstream:armv7:publish:
+  stage: publish
   tags:
     - arm
+  only:
+    - web
+  image: registry.gitlab.com/modioab/base-image/fedora-31/container:master
+  dependencies:
+    - upstream:armv7:build
+  script:
+    - make -C debian-armv7 build-publish
+
+
+debian:armv7:build:
+  tags:
+    - arm
+  stage:
+    - build
+  except:
+    - web
+
+  #  image: arm32v7/debian
+  #  image: registry.gitlab.com/modioab/base-image/bootstrap:debian-armv7
+  image: registry.gitlab.com/modioab/arm-image:oneshot
+  before_script:
+    - sed -i s:httpredir:ftp.nl:g /etc/apt/sources.list
+    - apt-get clean
+    - apt-get update
+    - apt-get install -y -qq debootstrap
   script:
     - make -C debian-armv7 rootfs.tar
   artifacts:
@@ -118,192 +72,14 @@ debian-armv7:build:
     expire_in: 1 day
 
 
-debian-armv7:publish:
-  stage: publish  # Because we want it in the stage after build
-  when: always
+debian:armv7:publish:
+  stage: publish
+  image: registry.gitlab.com/modioab/base-image/fedora-31/container:master
+  except:
+    - web
   tags:
     - x86_64
   dependencies:
-    - debian-armv7:build
+    - debian:armv7:build
   script:
     - make -C debian-armv7 build-publish
-
-
-rust-armv7:build:
-  allow_failure: true # FIXME: Remove when this is no longer failing
-  image: registry.gitlab.com/modioab/base-image:debian-armv7-master
-  before_script:
-    - apt-get clean
-    - apt-get update
-    - apt-get install -y -qq debootstrap
-  stage: build
-  tags:
-    - arm
-  script:
-    - make -C rust-armv7 rootfs.tar
-  artifacts:
-    paths:
-      - rust-armv7/rootfs.tar
-    expire_in: 1 day
-
-
-rust-armv7:publish:
-  allow_failure: true # FIXME: Remove when this is no longer failing
-  stage: publish  # Because we want it in the stage after build
-  when: always
-  tags:
-    - x86_64
-  dependencies:
-    - rust-armv7:build
-  script:
-    - make -C rust-armv7 build-publish
-
-
-nodejs-image:29:
-  stage: second
-  variables:
-    FEDORA_ROOT_RELEASE: '29'
-  tags:
-    - x86_64
-  script:
-    - make -C nodejs-image build-publish
-
-
-nodejs:f31:
-  stage: second
-  variables:
-    FEDORA_ROOT_RELEASE: '31'
-  tags:
-    - x86_64
-  script:
-    - make -C nodejs-image build-publish
-
-
-nginx:29:
-  stage: second
-  tags:
-    - x86_64
-  variables:
-    FEDORA_ROOT_RELEASE: '29'
-  script:
-    - make -C nginx build-publish
-
-
-nginx:f31:
-  stage: second
-  tags:
-    - x86_64
-  variables:
-    FEDORA_ROOT_RELEASE: '31'
-  script:
-    - make -C nginx build-publish
-
-
-mongodb:
-  stage: build
-  tags:
-    - x86_64
-  script:
-    - make -C mongodb build-publish
-
-
-meteor-image-29:
-  stage: second
-  tags:
-    - x86_64
-  script:
-    - make -C meteor-fedora-29 build-publish
-
-
-meteor:f31:
-  stage: second
-  tags:
-    - x86_64
-  variables:
-    FEDORA_ROOT_RELEASE: '31'
-  script:
-    - make -C meteor-image build-publish
-
-
-c-image-29:
-  variables:
-    FEDORA_ROOT_RELEASE: '29'
-  stage: second
-  tags:
-    - x86_64
-  script:
-    - make -C c-image build-publish
-
-
-c-image:f31:
-  variables:
-    FEDORA_ROOT_RELEASE: '31'
-  stage: second
-  tags:
-    - x86_64
-  script:
-    - make -C c-image build-publish
-
-
-go-image:29:
-  stage: second
-  variables:
-    FEDORA_ROOT_RELEASE: '29'
-  tags:
-    - x86_64
-  script:
-    - make -C go-image build-publish
-
-
-go-image:f31:
-  stage: second
-  variables:
-    FEDORA_ROOT_RELEASE: '31'
-  tags:
-    - x86_64
-  script:
-    - make -C go-image build-publish
-
-
-pgbouncer:30:
-  stage: second
-  variables:
-    FEDORA_ROOT_RELEASE: '30'
-  tags:
-    - x86_64
-  script:
-    - make -C pgbouncer build-publish
-
-
-pgbouncer:f31:
-  stage: second
-  variables:
-    FEDORA_ROOT_RELEASE: '31'
-  tags:
-    - x86_64
-  script:
-    - make -C pgbouncer build-publish
-
-
-rust-cross:
-  stage: build
-  tags:
-    - x86_64
-  script:
-    - make -C rust-cross build-publish
-
-
-trigger_build:
-  before_script:
-    - 'true'
-  stage: deploy
-  only:
-    - master
-  dependencies: []
-  script:
-    - curl -X POST -F token=$API_KEY        -F ref=master https://gitlab.com/api/v3/projects/1282148/trigger/builds
-    - curl -X POST -F token=$SUBMIT_KEY     -F ref=master https://gitlab.com/api/v3/projects/1282147/trigger/builds
-    - curl -X POST -F token=$CONTAINER_KEY  -F ref=master https://gitlab.com/api/v3/projects/1528552/trigger/builds
-    - curl -X POST -F token=$HOUSEKEEPER_KEY -F ref=master https://gitlab.com/api/v4/projects/5299264/trigger/pipeline
-    - curl -X POST -F token=$SSHCA_KEY      -F ref=master https://gitlab.com/api/v4/projects/7519281/trigger/pipeline
-    - curl -X POST -F token=$JOURNAL_GELF_KEY -F ref=master https://gitlab.com/api/v4/projects/9359556/trigger/pipeline
