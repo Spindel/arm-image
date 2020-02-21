@@ -49,10 +49,9 @@ upstream:armv7:publish:
 
 
 debian:armv7:build:
+  stage: build
   tags:
     - arm
-  stage:
-    - build
   except:
     - web
 
@@ -74,11 +73,11 @@ debian:armv7:build:
 
 debian:armv7:publish:
   stage: publish
+  tags:
+    - x86_64
   image: registry.gitlab.com/modioab/base-image/fedora-31/container:master
   except:
     - web
-  tags:
-    - x86_64
   dependencies:
     - debian:armv7:build
   script:
