@@ -57,8 +57,10 @@ debian:armv7:build:
     - web
 
   #  image: arm32v7/debian
-  #  image: registry.gitlab.com/modioab/base-image/bootstrap:debian-armv7
-  image: registry.gitlab.com/modioab/arm-image/debian9:oneshot
+  #  image: registry.gitlab.com/modioab/base-image/bootstrap:debian-armv7a
+  # XXX: Replace this once we build on 2020-02-21
+  # image: registry.gitlab.com/modioab/arm-image/debian9:oneshot
+  image: registry.gitlab.com/modioab/arm-image:debian9-oneshot
   before_script:
     - sed -i s:httpredir:ftp.nl:g /etc/apt/sources.list
     - apt-get update
