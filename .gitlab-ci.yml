@@ -26,7 +26,7 @@ upstream:armv7:build:
   before_script:
     - sed -i s:httpredir:ftp.nl:g /etc/apt/sources.list
     - apt-get update
-    - apt-get install -y -qq make debootstrap
+    - apt-get install -y -qq make debootstrap bash
   script:
     - make -C debian9 rootfs.tar
   artifacts:
