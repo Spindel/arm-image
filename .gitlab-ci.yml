@@ -39,7 +39,7 @@ upstream:armv7:publish:
   variables:
     IMAGE_TAG_SUFFIX: "oneshot"
   tags:
-    - arm
+    - x86_64
   only:
     - web
   image: registry.gitlab.com/modioab/base-image/fedora-31/container:master
