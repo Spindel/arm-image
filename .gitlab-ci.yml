@@ -46,7 +46,7 @@ upstream:armv7:publish:
   dependencies:
     - upstream:armv7:build
   script:
-    - make -C debian-armv7 build-publish
+    - make -C debian9 build-publish
 
 
 debian:armv7:build:
