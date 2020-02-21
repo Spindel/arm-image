@@ -38,7 +38,7 @@ upstream:armv7:build:
 upstream:armv7:publish:
   stage: publish
   variables:
-    - IMAGE_TAG_SUFFIX: "oneshot"
+    IMAGE_TAG_SUFFIX: "oneshot"
   tags:
     - arm
   only:
