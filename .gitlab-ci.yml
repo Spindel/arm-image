@@ -1,28 +1,31 @@
-# vim: expandtab:ts=2:sw=2:fdm=marker
+# vim: expandtab:ts=8:sw=2:tw=80:fdm=marker:ft=yaml:
+%YAML 1.1
 ---
-stages:
-  - build
-  - publish
-
-variables:
-  # Podman defaults to OCI images, since 2019-02-15+ onwards, gitlab registry
-  # fails to work properly with the default `oci` images.
-  # TODO: Test & bug-report this
-  BUILDAH_FORMAT: docker
-
-before_script:
-  - make -f build.mk login
-  - 'docker info ||:'
-  - 'podman info ||:'
+# Keep the includes first to illustrate that definitions that everything that
+# follows override included definitions.
+include:
+  # Use MergeRequest pipelines
+  # https://docs.gitlab.com/ee/ci/yaml/#workflowrules-templates
+  - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
+  - project: ModioAB/CI
+    ref: main
+    file:
+      - /ci/default.yml
+      - /ci/container.yml
 
 
-upstream:armv7:build:
+.manual:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+      allow_failure: true
+    - when: never
+
+
+.rootfs:
   stage: build
   tags:
     - arm
-  only:
-    - web
-  image: arm32v7/debian
   before_script:
     - sed -i s:httpredir:ftp.nl:g /etc/apt/sources.list
     - apt-get update
@@ -34,53 +37,51 @@ upstream:armv7:build:
       - debian9/rootfs.tar
     expire_in: 1 day
 
-upstream:armv7:publish:
-  stage: publish
-  variables:
-    IMAGE_TAG_SUFFIX: "oneshot"
-  tags:
-    - x86_64
-  only:
-    - web
-  image: registry.gitlab.com/modioab/base-image/fedora-31/container:master
-  dependencies:
-    - upstream:armv7:build
-  script:
-    - make -C debian9 build-publish
+
+upstream:armv7:build:
+  extends:
+    - .rootfs
+    - .manual
+  image:
+    name: arm32v7/debian
+    entrypoint: [""]
 
 
 debian:armv7:build:
-  stage: build
-  tags:
-    - arm
-  except:
-    - web
+  extends:
+    - .rootfs
+  image:
+    # Old oneshot image
+    # name: registry.gitlab.com/modioab/arm-image:debian9-oneshot
+    #
+    # Upstream image
+    # name: arm32v7/debian
+    #
+    # Latest image
+    name: registry.gitlab.com/modioab/arm-image/debian9:master
+    entrypoint: []
 
-  #  image: arm32v7/debian
-  #  image: registry.gitlab.com/modioab/base-image/bootstrap:debian-armv7a
-  # XXX: Replace this once we build on 2020-02-21
-  # image: registry.gitlab.com/modioab/arm-image/debian9:oneshot
-  image: registry.gitlab.com/modioab/arm-image:debian9-oneshot
-  before_script:
-    - sed -i s:httpredir:ftp.nl:g /etc/apt/sources.list
-    - apt-get update
-    - apt-get install -y -qq make debootstrap
+
+upstream:armv7:publish:
+  extends:
+    - .container:publish
+    - .manual
+  variables:
+    IMAGE_TAG_SUFFIX: "oneshot"
+
+  needs:
+    - upstream:armv7:build
   script:
-    - make -C debian9 rootfs.tar
-  artifacts:
-    paths:
-      - debian9/rootfs.tar
-    expire_in: 1 day
+    - make -C debian9 login
+    - make -C debian9 build-publish
 
 
 debian:armv7:publish:
-  stage: publish
-  tags:
-    - x86_64
-  image: registry.gitlab.com/modioab/base-image/fedora-31/container:master
-  except:
-    - web
-  dependencies:
+  extends:
+    - .container:publish
+  needs:
     - debian:armv7:build
   script:
+    - make -C debian9 login
     - make -C debian9 build-publish
+...
