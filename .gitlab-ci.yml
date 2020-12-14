@@ -14,69 +14,40 @@ include:
       - /ci/container.yml
 
 
-.rootfs:
-  stage: build
+.matrix:
+  parallel:
+    matrix:
+      - SUBDIR:
+          - debian9
+          - debian10
+
+
+build:
+  # We replace everything except the "rules" section here...
+  extends:
+    - .container:build
+    - .matrix
+  # If we had a qemu-static instead on the CI machines,
+  # we could do this using the "container" x86-64 image and just build this as a
+  # normal container.
+  #
+  # Now, this essentially reproduces a "container" image in the before_script,
+  # and does some debian-specific hacking in the "script" section.
   tags:
     - arm
-  before_script:
-    - sed -i s:httpredir:ftp.nl:g /etc/apt/sources.list
-    - apt-get update
-    - apt-get install -y -qq make debootstrap bash
-  script:
-    - make -C debian9 rootfs.tar
-  artifacts:
-    paths:
-      - debian9/rootfs.tar
-    expire_in: 1 day
-
-
-upstream:armv7:build:
-  extends: .rootfs
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: manual
-      allow_failure: true
-    - when: never
   image:
     name: arm32v7/debian
+    # debian + gitlab workaround for /bin/sh => /bin/dash
     entrypoint: [""]
 
-
-debian:armv7:build:
-  extends: .rootfs
-  image:
-    # Old oneshot image
-    # name: registry.gitlab.com/modioab/arm-image:debian9-oneshot
-    #
-    # Upstream image
-    # name: arm32v7/debian
-    #
-    # Latest image
-    name: registry.gitlab.com/modioab/arm-image/debian9:master
-    entrypoint: []
+  # re-create the container image, but in armv7
+  before_script:
+    - apt-get update
+    - apt-get -y install bash docker.io make curl git ncurses-bin
 
 
-upstream:armv7:publish:
-  extends: .container:publish
-  dependencies:
-    - upstream:armv7:build
-  variables:
-    IMAGE_TAG_SUFFIX: "oneshot"
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: manual
-      allow_failure: true
-    - when: never
-  script:
-    - make -C debian9 login
-    - make -C debian9 build-publish
-
-
-debian:armv7:publish:
-  extends: .container:publish
-  needs:
-    - debian:armv7:build
-  script:
-    - make -C debian9 login
-    - make -C debian9 build-publish
+publish:
+  extends:
+    - .container:publish
+    - .matrix
 ...
