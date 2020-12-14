@@ -13,41 +13,35 @@ include:
       - /ci/default.yml
       - /ci/container.yml
 
+variables:
+  # Only used by the container image
+  IMAGE_BUILD_FROM: docker.io/arm32v7/debian:10
 
 .matrix:
   parallel:
     matrix:
       - SUBDIR:
+          - container
           - debian9
           - debian10
 
-
-build:
+container:
   # We replace everything except the "rules" section here...
   extends:
-    - .container:build
+    - .container:publish
     - .matrix
   # If we had a qemu-static instead on the CI machines,
   # we could do this using the "container" x86-64 image and just build this as a
   # normal container.
   #
-  # Now, this essentially reproduces a "container" image in the before_script,
-  # and does some debian-specific hacking in the "script" section.
+  # issue: ModioAB/agile#2083
   tags:
     - arm
   image:
-    name: arm32v7/debian
+    name: registry.gitlab.com/modioab/arm-image/container:debian10
     # debian + gitlab workaround for /bin/sh => /bin/dash
     entrypoint: [""]
-
-  # re-create the container image, but in armv7
-  before_script:
-    - apt-get update
-    - apt-get -y install bash docker.io make curl git ncurses-bin
-
-
-publish:
-  extends:
-    - .container:publish
-    - .matrix
+  script:
+    - make -C ${SUBDIR} login
+    - make -C ${SUBDIR} build-publish
 ...
