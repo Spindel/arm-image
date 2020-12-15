@@ -1,5 +1,6 @@
-FROM docker.io/arm32v7/debian:9
-MAINTAINER "D.S. Ljungmark" <ljungmark@modio.se>
+ARG IMAGE_BUILD_FROM
+FROM $IMAGE_BUILD_FROM
+
 
 ARG URL=unknown
 ARG COMMIT=unknown
@@ -10,23 +11,15 @@ ARG DATE=unknown
 LABEL "se.modio.ci.url"=$URL  "se.modio.ci.branch"=$BRANCH  "se.modio.ci.commit"=$COMMIT  "se.modio.ci.host"=$HOST  "se.modio.ci.date"=$DATE
 
 
+MAINTAINER "D.S. Ljungmark" <ljungmark@modio.se>
 ENV container docker
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y -q \
-        ca-certificates \
-        squashfs-tools  \
-        cmake \
+        bash \
+        docker.io \
         make \
+        curl \
         git \
-        gcc \
-        g++ \
-        build-essential \
-        libltdl-dev \
-        python3-pip \
-        python3-wheel \
-        python3-dev \
-        libxml2-dev \
-        libxslt-dev \
-        zlib1g-dev \
+        ncurses-bin \
    && apt-get clean
