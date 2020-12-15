@@ -38,7 +38,7 @@ container:
   tags:
     - arm
   image:
-    name: registry.gitlab.com/modioab/arm-image/container:debian10
+    name: registry.gitlab.com/modioab/arm-image/container:master
     # debian + gitlab workaround for /bin/sh => /bin/dash
     entrypoint: [""]
   script:
