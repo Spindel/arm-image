@@ -19,6 +19,7 @@ include:
       - SUBDIR:
           - debian9
           - debian10
+          - debian11
 
 # Note, this project needs qemu-user-static on the host that builds it.
 container:
