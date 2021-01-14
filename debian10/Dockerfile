@@ -1,4 +1,4 @@
-FROM docker.io/arm32v7/debian:10
+FROM docker.io/library/debian:10
 MAINTAINER "D.S. Ljungmark" <ljungmark@modio.se>
 
 ARG URL=unknown

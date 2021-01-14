@@ -20,18 +20,14 @@ include:
           - debian9
           - debian10
 
+# Note, this project needs qemu-user-static on the host that builds it.
 container:
-  # We replace everything except the "rules" section here...
+  # We replace everything except the "rules" section from container publish
   extends:
     - .container:publish
     - .matrix
   tags:
     - arm
-  variables:
-    # Injecting these arguments to podman makes it work and resolve the armv7
-    # containers properly.
-    # Note, still needs qemu-user-static on the host
-    PODMAN_PULL: "--pull=false --platform=linux/arm"
   script:
     - podman info
     - make -C ${SUBDIR} login
