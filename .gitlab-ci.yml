@@ -13,15 +13,10 @@ include:
       - /ci/default.yml
       - /ci/container.yml
 
-variables:
-  # Only used by the container image
-  IMAGE_BUILD_FROM: docker.io/arm32v7/debian:10
-
 .matrix:
   parallel:
     matrix:
       - SUBDIR:
-          - container
           - debian9
           - debian10
 
@@ -30,18 +25,15 @@ container:
   extends:
     - .container:publish
     - .matrix
-  # If we had a qemu-static instead on the CI machines,
-  # we could do this using the "container" x86-64 image and just build this as a
-  # normal container.
-  #
-  # issue: ModioAB/agile#2083
   tags:
     - arm
-  image:
-    name: registry.gitlab.com/modioab/arm-image/container:master
-    # debian + gitlab workaround for /bin/sh => /bin/dash
-    entrypoint: [""]
+  variables:
+    # Injecting these arguments to podman makes it work and resolve the armv7
+    # containers properly.
+    # Note, still needs qemu-user-static on the host
+    PODMAN_PULL: "--pull=false --platform=linux/arm"
   script:
+    - podman info
     - make -C ${SUBDIR} login
     - make -C ${SUBDIR} build-publish
 ...
