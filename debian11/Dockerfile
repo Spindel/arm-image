@@ -1,4 +1,4 @@
-FROM docker.io/library/debian:10
+FROM docker.io/library/debian:11
 MAINTAINER "D.S. Ljungmark" <ljungmark@modio.se>
 
 ARG URL=unknown
@@ -11,6 +11,7 @@ LABEL "se.modio.ci.url"=$URL  "se.modio.ci.branch"=$BRANCH  "se.modio.ci.commit"
 
 
 ENV container docker
+RUN apt-get update || apt-get update
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y -q \
