@@ -20,6 +20,9 @@ include:
           - debian9
           - debian10
           - debian11
+        PODMAN_PULL:
+          - --platform=linux/arm
+          - --platform=linux/x86_64
 
 # Note, this project needs qemu-user-static on the host that builds it.
 container:
