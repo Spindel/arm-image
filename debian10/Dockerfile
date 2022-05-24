@@ -19,8 +19,6 @@ RUN apt-get update && \
 # Packages needed to run as a gitlab CI stage
         openssh-client \
         git \
-        python3-setuptools \
-        python3-wheel \
         python3-pip \
 # Build related tools, what mytemp-backend needs to compile wheels etc.
         ca-certificates \
@@ -36,4 +34,7 @@ RUN apt-get update && \
         libxml2-dev \
         libxslt-dev \
         zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+# The most common thing in all consumers is to update some these python packages
+    &&  /usr/bin/python3 -m pip install --upgrade pip \
+    &&  /usr/bin/python3 -m pip install --upgrade wheel setuptools
