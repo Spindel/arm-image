@@ -23,6 +23,7 @@ RUN apt-get update && \
         python3-wheel \
         python3-pip \
 # Build related tools, what mytemp-backend needs to compile wheels etc.
+        libdbus-1-3 \
         ca-certificates \
         squashfs-tools \
         cmake \
