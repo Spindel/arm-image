@@ -29,12 +29,12 @@ RUN apt-get update && \
         python3-gi \
         python3-dbus \
         python3-pycurl \
-        python3-serial \
         python3-requests \
         python3-flufl.lock \
         python3-netifaces \
         python3-serial \
         python3-serial-asyncio \
         python3-pymodbus \
+        python3-lxml \
         squashfs-tools \
     && rm -rf /var/lib/apt/lists/*
