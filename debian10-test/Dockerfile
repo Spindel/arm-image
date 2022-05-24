@@ -1,5 +1,5 @@
-FROM debian:buster
-MAINTAINER "D.S. Ljungmark" <ljungmark@modio.se>
+FROM docker.io/library/debian:10
+LABEL maintainer="ljungmark@modio.se"
 ENV container docker
 
 ARG URL=unknown
@@ -17,11 +17,12 @@ LABEL se.modio.ci.commit="$COMMIT"
 
 RUN apt-get update && \
     apt-get --assume-yes --no-install-recommends install \
-# Added for our use in containers
+# Packages needed to run as a gitlab CI stage
         openssh-client \
         git \
         python3-setuptools \
         python3-wheel \
+        python3-pip \
 # Below are part of system image
         dbus \
         python3 \

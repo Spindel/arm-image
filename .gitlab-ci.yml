@@ -22,7 +22,14 @@ include:
           - debian11
         PODMAN_PULL:
           - --platform=linux/arm
-          - --platform=linux/x86_64
+          # We have no consumers of an x86_64 debian based build container
+          # right now.
+          # - --platform=linux/amd64
+      - SUBDIR:
+          - debian10-test
+        PODMAN_PULL:
+          - --platform=linux/arm
+          - --platform=linux/amd64
 
 # Note, this project needs qemu-user-static on the host that builds it.
 container:
