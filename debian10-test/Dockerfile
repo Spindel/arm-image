@@ -14,7 +14,6 @@ LABEL se.modio.ci.date="$DATE"
 LABEL se.modio.ci.branch="$BRANCH"
 LABEL se.modio.ci.commit="$COMMIT"
 
-
 RUN apt-get update && \
     apt-get --assume-yes --no-install-recommends install \
 # Packages needed to run as a gitlab CI stage
