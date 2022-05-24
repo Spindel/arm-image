@@ -25,6 +25,7 @@ RUN apt-get update && \
 # Build related tools, what mytemp-backend needs to compile wheels etc.
         ca-certificates \
         squashfs-tools \
+        libdbus-1-3 \
         cmake \
         make \
         git \
