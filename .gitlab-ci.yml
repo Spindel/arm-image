@@ -38,6 +38,11 @@ container:
   extends:
     - .container:publish
     - .matrix
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      variables:
+        IMAGE_TAG_SUFFIX: "latest"
+    - !reference [.container:publish, rules]
   tags:
     - arm
   script:
