@@ -27,6 +27,7 @@ include:
           # - --platform=linux/amd64
       - SUBDIR:
           - debian10-test
+          - debian11-test
         PODMAN_PULL:
           - --platform=linux/arm
           - --platform=linux/amd64
