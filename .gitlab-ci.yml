@@ -22,14 +22,17 @@ include:
           - debian11
         PODMAN_PULL:
           - --platform=linux/arm
-          # We have no consumers of an x86_64 debian based build container
-          # right now.
-          # - --platform=linux/amd64
+          # Due to us not being able to pass "platform: " in .gitlab-ci.yml, we
+          # should not use multi-arch images for that purpouse.
+          # As modio-networks uses these images to check that it built &
+          # executes the correct code ( arm code vs. x86, etc), we should not
+          # provide both an "arm" and x86_64 image of these.
       - SUBDIR:
+          # These images are used to test, and used in reference from
+          # Dockerfiles, so we build them for amd64...
           - debian10-test
           - debian11-test
         PODMAN_PULL:
-          - --platform=linux/arm
           - --platform=linux/amd64
 
 # Note, this project needs qemu-user-static on the host that builds it.
