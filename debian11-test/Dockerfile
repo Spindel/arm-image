@@ -1,4 +1,4 @@
-FROM docker.io/library/debian:9
+FROM docker.io/library/debian:11
 LABEL maintainer="ljungmark@modio.se"
 ENV container docker
 
@@ -22,18 +22,19 @@ RUN apt-get update && \
         python3-setuptools \
         python3-wheel \
         python3-pip \
-# Build related tools, what mytemp-backend needs to compile wheels etc.
-        ca-certificates \
+# Below are part of system image
+        dbus \
+        python3 \
+        python3-pip \
+        python3-gi \
+        python3-dbus \
+        python3-pycurl \
+        python3-serial \
+        python3-requests \
+        python3-flufl.lock \
+        python3-netifaces \
+        python3-serial \
+        python3-serial-asyncio \
+        python3-pymodbus \
         squashfs-tools \
-        cmake \
-        make \
-        git \
-        gcc \
-        g++ \
-        build-essential \
-        libltdl-dev \
-        python3-dev \
-        libxml2-dev \
-        libxslt-dev \
-        zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*

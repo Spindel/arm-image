@@ -20,6 +20,17 @@ include:
           - debian9
           - debian10
           - debian11
+        PODMAN_PULL:
+          - --platform=linux/arm
+          # We have no consumers of an x86_64 debian based build container
+          # right now.
+          # - --platform=linux/amd64
+      - SUBDIR:
+          - debian10-test
+          - debian11-test
+        PODMAN_PULL:
+          - --platform=linux/arm
+          - --platform=linux/amd64
 
 # Note, this project needs qemu-user-static on the host that builds it.
 container:
@@ -27,6 +38,11 @@ container:
   extends:
     - .container:publish
     - .matrix
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      variables:
+        IMAGE_TAG_SUFFIX: "latest"
+    - !reference [.container:publish, rules]
   tags:
     - arm
   script:
